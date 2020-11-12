@@ -1,41 +1,42 @@
-// module.exports = () => {};
-
-// Módulo para trabajar con rutas de archivos y directorios
-const path = require('path');
-// Módulo que permite trabajar con el sistema de archivos en su computador
 const fs = require('fs');
-const { resolve } = require('path');
-const { rejects } = require('assert');
-
+const path = require('path');
 
 // ¿Ruta absoluta o relativa? 
 let pathFile = process.argv[2];
-let options = {
-  validate: false
-};
+// let options = {
+//   validate: false
+// };
 
 // Métodos de path que devuelven una ruta absoluta
 pathFile = path.resolve(pathFile); // Absoluta
 pathFile = path.normalize(pathFile); // normaliza y resuelve '..' y '.'
 
-const mdLinks = fs.readFile(pathFile, "utf-8", (error, data) => {
-  if (error) {
-    console.log(error + 'Por favor ingresa una ruta correcta');
-  }
-  console.log(data);
-});
 
+// Método de fs recibe parametros y una callback 
+const mdLinks = () => {
+  fs.readFile(pathFile, "utf-8", (error, content) => {
+    if (error) {
+      console.log(error + 'Por favor ingresa una ruta correcta');
+    } else {
+      linkMarkdown(content);
+    }
+  });
+}
 
-//   return new Promise((resolve, reject) => {
+const linkMarkdown = (content) => {
+  //Separa el texto en diferentes líneas
+  const separateText = content.split("\n");
+  const regexMdLinks = /\[([^\[]+)\](\(.*\))/gm;
+  // const singleMatch = /\[([^\[]+)\]\((.*)\)/;
+  // const urlRegex = /\[(.+)\]\(([^ ]+?)( "(.+)")?\)/;
+  const linkArray = [];
+  separateText.forEach((element) => {
+    const links = element.match(regexMdLinks);
+    if (links !== null) {
+      linkArray.push(links);
+    }
+  })
+  console.log(linkArray)
+};
 
-
-module.exports = mdLinks;
-
-// mdLinks()
-//   .then(route => {
-//     if (route === '') {
-//       return
-//     } throw 'Ingresa una ruta correcta';
-
-//   })
-//   .catch(error => console.log(error))
+mdLinks();

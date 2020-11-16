@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 const extractLinks = require('./extractLinks')
 
@@ -9,16 +8,14 @@ let pathFile = process.argv[2];
 pathFile = path.resolve(pathFile); // Absoluta
 pathFile = path.normalize(pathFile); // normaliza y resuelve '..' y '.'
 
+// Objeto
+const options = {
+  validate: false,
+  stats: false
+};
 
 // Método de fs recibe parametros y una callback 
-const mdLinks = () => {
-  fs.readFile(pathFile, "utf-8", (error, content) => {
-    if (error) {
-      console.log(error + 'Por favor ingresa una ruta correcta');
-    } else {
-      console.log(extractLinks);
-    }
-  });
-}
+const mdLinks = (path, options) => {
+};
 
-mdLinks();
+extractLinks(pathFile, options);

@@ -7,19 +7,28 @@ const { JSDOM } = jsdom;
 
 // Recibe una ruta
 let pathFile = process.argv[2];
+let directory = __dirname;
 
 // Métodos de path que devuelven una ruta absoluta
 pathFile = path.resolve(pathFile); // Absoluta
 pathFile = path.normalize(pathFile); // normaliza y resuelve '..' y '.'
 
+// Objeto
+const options = {
+  validate: false,
+  stats: false
+};
+
 // Método de fs recibe parametros y una callback 
 const mdLinks = () => {
-  fs.readFile(pathFile, "utf-8", (error, content) => {
+
+  fs.readFile(pathFile, [options], (error, content) => {
+
     if (error) {
       console.log(error + 'Por favor ingresa una ruta correcta');
     } else {
       // Pasar mi archivo .md a html
-      let fileMd = md.render(content);
+      let fileMd = md.render(content.toString());
       // Crea un dom con el archivo html
       const dom = new JSDOM(fileMd);
       const links = dom.window.document.querySelectorAll("a");
@@ -47,3 +56,21 @@ const mdLinks = () => {
 }
 
 mdLinks();
+
+// Leer el directorio.
+
+// const readDirectory = () => {
+//   fs.readdir(directory, (error, records) => {
+//     if (error) {
+//       console.log(error + 'Algo salio mal');
+//     }
+//     else {
+//       records.forEach(record => {
+//         console.log(record)
+//         return record;
+//       })
+//     }
+//   });
+// }
+
+// readDirectory();

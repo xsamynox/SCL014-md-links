@@ -73,3 +73,38 @@ mdLinks();
 // }
 
 // readDirectory();
+
+
+// export const readData = () => {
+//   const db = firebase.firestore();
+
+//   return new Promise((resolve, reject) => {
+//     db.collection('recipe')
+//       .get()
+//       .then((querySnapshot) => {
+//         const result = [];
+
+//         querySnapshot.forEach((doc) => {
+//           result.push({
+//             ...doc.data(),
+//             post: { ...doc.data().post, uid: doc.id },
+//           });
+//         });
+
+//         return resolve(result);
+//       })
+//       .catch(err => reject(err));
+//   });
+// };
+
+// const mdLinks = (pathFile, options) => {
+//   return new Promise((resolve, reject) => {
+//     mdLinks()
+//       .then((links) => {
+//         console.log('oliwis');
+//         return resolve('oliwis');
+//       })
+//       .catch(err => reject(err));
+//   });
+// }
+

@@ -8,14 +8,11 @@ let pathFile = process.argv[2];
 pathFile = path.resolve(pathFile); // Absoluta
 pathFile = path.normalize(pathFile); // normaliza y resuelve '..' y '.'
 
-console.log(pathFile)
 // Objeto
 const options = {
   validate: false,
   stats: false
 };
 
-// const mdLinks = (path, options) => {
-// };
-
 mdLinks(pathFile, options);
+

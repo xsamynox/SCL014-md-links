@@ -4,7 +4,6 @@ const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 
 module.exports = (path, options) => {
-
   // Verificar que la ruta dada es un archivo o directorio
   // Dependiendo de eso se ejecuta lo requerido.
   fs.stat(path, (err, stats) => {
@@ -16,15 +15,15 @@ module.exports = (path, options) => {
         const files = readDirectory(path)
         readFile(files)
       }
-    }
-    else
+    } else {
       throw err;
+    }
   });
-
 };
 
 // Función que lee archivo .md y retorna los links
 const readFile = (filePath) => {
+  // Caso para file
   if (typeof filePath === 'string') {
     fs.readFile(filePath, (error, content) => {
       if (error) {
@@ -33,13 +32,14 @@ const readFile = (filePath) => {
         extractLinks(filePath, content);
       }
     })
+    // Caso para directorio
   } else {
-    filePath.forEach((link) => {
-      fs.readFile(link, (error, content) => {
+    filePath.forEach(file => {
+      fs.readFile(file, (error, content) => {
         if (error) {
           throw error;
         } else {
-          extractLinks(link, content);
+          extractLinks(file, content);
         }
       })
     })
@@ -47,6 +47,24 @@ const readFile = (filePath) => {
 }
 
 // Leer el directorio.
+// const readDirectory = (folderPath) => {
+//   const myfiles = [];
+//   fs.readdir(folderPath, (error, files) => {
+//     if (error) {
+//       throw error;
+//     } else {
+//       files.forEach(file => {
+//         if (file.includes('.md')) {
+//           myfiles.push(file);
+//         } else {
+//           return;
+//         }
+//       });
+//     }
+//     return myfiles;
+//   }); // acomodar sin sync
+// };
+
 const readDirectory = (folderPath) => {
   const myfiles = [];
   const arrayOfFiles = fs.readdirSync(folderPath); // acomodar sin sync
@@ -59,6 +77,17 @@ const readDirectory = (folderPath) => {
   });
   return myfiles
 }
+
+
+// const readDirectory = (folderPath) => {
+//   const myfiles = [];
+//   fs.readdir(folderPath, (error, files) => {
+//     files.forEach(file => {
+//       console.log('file ', file);
+//     })
+//   })
+// }
+
 
 const extractLinks = (filePath, content) => {
   // Pasar mi archivo .md a html

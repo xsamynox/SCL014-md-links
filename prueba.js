@@ -7,7 +7,6 @@ const { JSDOM } = jsdom;
 
 // Recibe una ruta
 let pathFile = process.argv[2];
-let directory = __dirname;
 
 // Métodos de path que devuelven una ruta absoluta
 pathFile = path.resolve(pathFile); // Absoluta

@@ -1,5 +1,5 @@
 const path = require('path');
-const extractLinks = require('./extractLinks')
+const mdLinks = require('./extractLinks')
 
 // Recibe una ruta
 let pathFile = process.argv[2];
@@ -8,14 +8,14 @@ let pathFile = process.argv[2];
 pathFile = path.resolve(pathFile); // Absoluta
 pathFile = path.normalize(pathFile); // normaliza y resuelve '..' y '.'
 
+console.log(pathFile)
 // Objeto
 const options = {
   validate: false,
   stats: false
 };
 
-// Método de fs recibe parametros y una callback 
-const mdLinks = (path, options) => {
-};
+// const mdLinks = (path, options) => {
+// };
 
-extractLinks(pathFile, options);
+mdLinks(pathFile, options);

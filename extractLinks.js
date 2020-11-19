@@ -49,7 +49,7 @@ const readFile = (filePath) => {
 // Leer el directorio.
 // const readDirectory = (folderPath) => {
 //   const myfiles = [];
-//   fs.readdir(folderPath, (error, files) => {
+//   fs.readdir(folderPath, 'utf-8', (error, files) => {
 //     if (error) {
 //       throw error;
 //     } else {
@@ -77,7 +77,6 @@ const readDirectory = (folderPath) => {
   });
   return myfiles
 }
-
 
 // const readDirectory = (folderPath) => {
 //   const myfiles = [];
@@ -115,3 +114,11 @@ const extractLinks = (filePath, content) => {
   console.log(linksInArray)
   return linksInArray;
 }
+
+
+// cambiar a fetch
+// http.get(url, (respuesta) => {
+//   respuesta.on("data", (param) => {
+//     console.log(param.toString());
+//   });
+// });

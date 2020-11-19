@@ -1,24 +1,19 @@
+#!/usr/bin / env node
+
 const fs = require("fs");
 const path = require('path');
 const util = require("util");
 const md = require("markdown-it")();
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-// const mdLinks = require('./extractLinks')
-
 
 // Recibe una ruta
 let filePath = process.argv[2];
-const pathDirectory = path.resolve(filePath);
-
-
 // Métodos de path que devuelven una ruta absoluta
 filePath = path.resolve(filePath); // Absoluta
 filePath = path.normalize(filePath); // normaliza y resuelve '..' y '.'
 
-// mdLinks(filePath, options);
-
-// // Objeto
+// Objeto
 const options = {
   validate: false,
   stats: false
@@ -35,13 +30,13 @@ module.exports.init = () => {
 
     if (isFile) {
       return extractLinks([filePath])
-        .then(data => console.log("file", data))
+        .then(data => console.log(data))
         .catch(error);
     } if (isDirectory) {
       readdir(filePath)
         .then(files => {
-          const filesMarkdown = files.filter(file => file.includes(".md"));
-          return extractLinks(filesMarkdown).then(data => console.log("directory", data));
+          const filesMarkdown = files.filter(file => file.includes('.md'));
+          return extractLinks(filesMarkdown).then(data => console.log(data));
         })
         .catch(error);
     } else {
@@ -64,10 +59,9 @@ const readFileContent = (file) => {
 const extractLinks = (files) => {
   return new Promise((resolve, reject) => {
     if (!files.length) {
-      reject("Arreglo no valido");
+      reject('Arreglo no valido');
     }
     const promises = files.map(file => readFileContent(file));
-    console.log('promises', promises)
 
     Promise.all(promises).then(files => {
       let linksInArray = [];
@@ -77,21 +71,11 @@ const extractLinks = (files) => {
         const fileMd = md.render(file.content.toString());
         const domContent = new JSDOM(fileMd);
         // Creo un array desde el nodeList
-        const links = Array.from(
-          domContent.window.document.querySelectorAll("a")
-        );
-
+        const links = Array.from(domContent.window.document.querySelectorAll('a'));
         links.forEach((link) => {
-          let filePath;
-          if (files.length > 1) {
-            filePath = pathDirectory && file.fileName;
-          } else {
-            filePath = pathDirectory;
-          }
-
           detailsLinks = {
             href: link.href,
-            text: link.text,
+            text: link.text.slice(0, 50),
             file: filePath,
           }
           const aboutBlank = 'about:blank';
@@ -100,7 +84,6 @@ const extractLinks = (files) => {
             linksInArray.push(detailsLinks);
           }
         })
-        linksInArray = Array.from(new Set(linksInArray));
       }
       resolve(linksInArray);
     });
@@ -108,3 +91,7 @@ const extractLinks = (files) => {
 };
 
 this.init();
+
+// fetch()
+//   .then(response => response.json())
+//   .then(data => console.log(data));

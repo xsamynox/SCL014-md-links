@@ -1,11 +1,12 @@
-#!/usr/bin / env node
+#!/usr/bin/env node
 
 const fs = require("fs");
 const path = require('path');
-const util = require("util");
-const md = require("markdown-it")();
-const jsdom = require("jsdom");
+const util = require('util');
+const md = require('markdown-it')();
+const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
+const fetchUrl = require('fetch').fetchUrl;
 
 // Recibe una ruta
 let filePath = process.argv[2];
@@ -30,13 +31,33 @@ module.exports.init = () => {
 
     if (isFile) {
       return extractLinks([filePath])
-        .then(data => console.log(data))
+        .then(data => {
+          Promise.all(data.map(href => getStatusUrl(href).catch(error => 'broken')))
+            .then(results => {
+              statsObject = {
+                total: results.length,
+                unique: 10,
+                broken: results.length,
+              }
+              console.log('la cantidad de status 200 son: ', results.length)
+            });
+        })
         .catch(error);
     } if (isDirectory) {
       readdir(filePath)
         .then(files => {
           const filesMarkdown = files.filter(file => file.includes('.md'));
-          return extractLinks(filesMarkdown).then(data => console.log(data));
+          return extractLinks(filesMarkdown).then(data => {
+            Promise.all(data.map(href => getStatusUrl(href).catch(error => 'broken' + error)))
+              .then(results => {
+                statsObject = {
+                  total: 12,
+                  unique: 10,
+                  broken: results.length,
+                }
+                console.log('la cantidad de status 200 son: ', results.length)
+              });
+          });
         })
         .catch(error);
     } else {
@@ -85,13 +106,44 @@ const extractLinks = (files) => {
           }
         })
       }
+      getStatusUrlInArray(linksInArray);
       resolve(linksInArray);
     });
   });
 };
 
+
 this.init();
 
-// fetch()
-//   .then(response => response.json())
-//   .then(data => console.log(data));
+
+// FETCH => Recibe el status
+const getStatusUrl = (links) => {
+  return new Promise((resolve, reject) => {
+    fetchUrl(links.href, (error, meta) => {
+      if (error) {
+        reject(error);
+      } else {
+        if (meta.status === 200) {
+          resolve(meta.status);
+        }
+      }
+    });
+  });
+};
+
+// Recorre el array 
+const getStatusUrlInArray = (linksInArray) => {
+  let status = 0;
+  let broken = 0;
+  for (let i = 0; i < linksInArray.length; i++) {
+    getStatusUrl(linksInArray[i])
+      .then(res => {
+        if (res === 200) {
+          status += 1;
+        }
+        if (res > 400) {
+          broken += 1;
+        }
+      })
+  }
+}

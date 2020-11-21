@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 const fs = require("fs");
 const path = require('path');
 const util = require('util');
@@ -14,12 +13,11 @@ let filePath = process.argv[2];
 filePath = path.resolve(filePath); // Absoluta
 filePath = path.normalize(filePath); // normaliza y resuelve '..' y '.'
 
-// Objeto
-const options = {
-  validate: false,
-  stats: false
-};
+// Si el arreglo de Process.argv incluye validate o stats
+const validateParam = process.argv.includes('--validate') || process.argv.includes('--v')
+const statsParam = process.argv.includes('--stats') || process.argv.includes('--s')
 
+// Llevando a promesa readdir
 const readdir = util.promisify(fs.readdir);
 
 module.exports.init = () => {
@@ -32,31 +30,18 @@ module.exports.init = () => {
     if (isFile) {
       return extractLinks([filePath])
         .then(data => {
-          Promise.all(data.map(href => getStatusUrl(href).catch(error => 'broken')))
-            .then(results => {
-              statsObject = {
-                total: results.length,
-                unique: 10,
-                broken: results.length,
-              }
-              console.log('la cantidad de status 200 son: ', results.length)
-            });
+          console.log('data', data)
+          return data;
         })
         .catch(error);
+
     } if (isDirectory) {
       readdir(filePath)
         .then(files => {
           const filesMarkdown = files.filter(file => file.includes('.md'));
           return extractLinks(filesMarkdown).then(data => {
-            Promise.all(data.map(href => getStatusUrl(href).catch(error => 'broken' + error)))
-              .then(results => {
-                statsObject = {
-                  total: 12,
-                  unique: 10,
-                  broken: results.length,
-                }
-                console.log('la cantidad de status 200 son: ', results.length)
-              });
+            console.log('data', data)
+            return data;
           });
         })
         .catch(error);
@@ -66,7 +51,8 @@ module.exports.init = () => {
   });
 };
 
-const readFileContent = (file) => {
+// Función que lee el contenido de un archivo
+const readFileContent = file => {
   return new Promise((resolve, reject) => {
     fs.readFile(file, (error, content) => {
       if (error) {
@@ -77,73 +63,84 @@ const readFileContent = (file) => {
   });
 };
 
+// Función que extrae los links y la información
 const extractLinks = (files) => {
   return new Promise((resolve, reject) => {
     if (!files.length) {
       reject('Arreglo no valido');
     }
     const promises = files.map(file => readFileContent(file));
+    // Stats
+    if (statsParam) {
 
-    Promise.all(promises).then(files => {
-      let linksInArray = [];
-      let detailsLinks = {};
-      for (const file of files) {
-        // Pasar mi archivo .md a html
-        const fileMd = md.render(file.content.toString());
-        const domContent = new JSDOM(fileMd);
-        // Creo un array desde el nodeList
-        const links = Array.from(domContent.window.document.querySelectorAll('a'));
-        links.forEach((link) => {
-          detailsLinks = {
-            href: link.href,
-            text: link.text.slice(0, 50),
-            file: filePath,
+    }
+    // Validate
+    if (validateParam) {
+      Promise.all(promises).then(files => {
+        const promisesUrl = []
+        for (const file of files) {
+          // Pasar mi archivo .md a html
+          const fileMd = md.render(file.content.toString());
+          const domContent = new JSDOM(fileMd);
+          const links = Array.from(domContent.window.document.querySelectorAll('a'));
+          for (const link of links) {
+            const aboutBlank = 'about:blank';
+            const regularExpression = new RegExp(aboutBlank, 'gi');
+            if (!regularExpression.exec(link.href)) {
+              promisesUrl.push(getStatusUrl(link))
+            }
           }
-          const aboutBlank = 'about:blank';
-          const regularExpression = new RegExp(aboutBlank, 'gi');
-          if (!regularExpression.exec(link.href)) {
-            linksInArray.push(detailsLinks);
-          }
-        })
-      }
-      getStatusUrlInArray(linksInArray);
-      resolve(linksInArray);
-    });
+        }
+        Promise.all(promisesUrl).then(urls => {
+          resolve(urls.map(url => {
+            const statusText = url.meta.status >= 400 ? 'fail' : 'ok';
+            return `${filePath} ${url.meta.finalUrl} ${statusText} ${url.meta.status} ${url.text}`
+          }))
+
+        }).catch(console.log)
+      })
+    }
+    // Comportamiento por defecto
+    if (!validateParam && !statsParam) {
+      Promise.all(promises).then(files => {
+        let linksInArray = [];
+        let detailsLinks = {};
+        for (const file of files) {
+          // Pasar mi archivo .md a html
+          const fileMd = md.render(file.content.toString());
+          const domContent = new JSDOM(fileMd);
+          // Creo un array desde el nodeList
+          const links = Array.from(domContent.window.document.querySelectorAll('a'));
+          links.forEach((link) => {
+            detailsLinks = {
+              href: link.href,
+              text: link.text.slice(0, 50),
+              file: filePath,
+            }
+            const aboutBlank = 'about:blank';
+            const regularExpression = new RegExp(aboutBlank, 'gi');
+            if (!regularExpression.exec(link.href)) {
+              linksInArray.push(detailsLinks);
+            }
+          })
+        }
+        resolve(linksInArray);
+      });
+    }
   });
-};
-
+}
 
 this.init();
 
-
-// FETCH => Recibe el status
-const getStatusUrl = (links) => {
+// FETCH => Recibe la data de los links
+const getStatusUrl = (link) => {
   return new Promise((resolve, reject) => {
-    fetchUrl(links.href, (error, meta) => {
+    fetchUrl(link.href, (error, meta) => {
       if (error) {
         reject(error);
       } else {
-        if (meta.status === 200) {
-          resolve(meta.status);
-        }
+        resolve({ text: link.text, meta });
       }
     });
   });
 };
-
-// Recorre el array 
-const getStatusUrlInArray = (linksInArray) => {
-  let status = 0;
-  let broken = 0;
-  for (let i = 0; i < linksInArray.length; i++) {
-    getStatusUrl(linksInArray[i])
-      .then(res => {
-        if (res === 200) {
-          status += 1;
-        }
-        if (res > 400) {
-          broken += 1;
-        }
-      })
-  }
-}

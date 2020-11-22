@@ -30,7 +30,7 @@ module.exports.init = () => {
     if (isFile) {
       return extractLinks([filePath])
         .then(data => {
-          console.log('data', data)
+          console.log(data)
           return data;
         })
         .catch(error);
@@ -40,7 +40,7 @@ module.exports.init = () => {
         .then(files => {
           const filesMarkdown = files.filter(file => file.includes('.md'));
           return extractLinks(filesMarkdown).then(data => {
-            console.log('data', data)
+            console.log(data)
             return data;
           });
         })
@@ -71,11 +71,29 @@ const extractLinks = (files) => {
     }
     const promises = files.map(file => readFileContent(file));
     // Stats
-    if (statsParam) {
-
+    if (statsParam && !validateParam) {
+      Promise.all(promises).then(files => {
+        const allLinks = []
+        for (const file of files) {
+          // Pasar mi archivo .md a html
+          const fileMd = md.render(file.content.toString());
+          const domContent = new JSDOM(fileMd);
+          const links = Array.from(domContent.window.document.querySelectorAll('a'));
+          for (const link of links) {
+            const aboutBlank = 'about:blank';
+            const regularExpression = new RegExp(aboutBlank, 'gi');
+            if (!regularExpression.exec(link.href)) {
+              allLinks.push(link.href)
+            }
+          }
+        }
+        let uniqueLinks = Array.from(new Set(allLinks)).length
+        resolve(`Total: ${allLinks.length} 
+Unique: ${uniqueLinks}`);
+      })
     }
     // Validate
-    if (validateParam) {
+    if (validateParam && !statsParam) {
       Promise.all(promises).then(files => {
         const promisesUrl = []
         for (const file of files) {
@@ -97,6 +115,35 @@ const extractLinks = (files) => {
             return `${filePath} ${url.meta.finalUrl} ${statusText} ${url.meta.status} ${url.text}`
           }))
 
+        }).catch(console.log)
+      })
+    }
+    // Validate y Stats
+    if (validateParam && statsParam) {
+      Promise.all(promises).then(files => {
+        const promisesUrl = []
+        for (const file of files) {
+          // Pasar mi archivo .md a html
+          const fileMd = md.render(file.content.toString());
+          const domContent = new JSDOM(fileMd);
+          const links = Array.from(domContent.window.document.querySelectorAll('a'));
+          for (const link of links) {
+            const aboutBlank = 'about:blank';
+            const regularExpression = new RegExp(aboutBlank, 'gi');
+            if (!regularExpression.exec(link.href)) {
+              promisesUrl.push(getStatusUrl(link))
+            }
+          }
+        }
+        Promise.all(promisesUrl).then(urls => {
+          let uniqueLinks = Array.from(new Set(promisesUrl)).length
+          urls.map(url => {
+            const statusText = url.meta.status >= 400 ? 'fail' : 'ok';
+            resolve(`Total: ${promisesUrl.length} hisjdasdhajshkjahdfkjhadkj
+              Unique: ${uniqueLinks} 
+              Broken: ${statusText}
+              abracadabra: `);
+          })
         }).catch(console.log)
       })
     }
@@ -129,7 +176,6 @@ const extractLinks = (files) => {
     }
   });
 }
-
 this.init();
 
 // FETCH => Recibe la data de los links

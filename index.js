@@ -121,6 +121,7 @@ Unique: ${uniqueLinks}`);
     // Validate y Stats
     if (validateParam && statsParam) {
       Promise.all(promises).then(files => {
+        const allLinks = [];
         const promisesUrl = []
         for (const file of files) {
           // Pasar mi archivo .md a html
@@ -131,21 +132,27 @@ Unique: ${uniqueLinks}`);
             const aboutBlank = 'about:blank';
             const regularExpression = new RegExp(aboutBlank, 'gi');
             if (!regularExpression.exec(link.href)) {
+              allLinks.push(link.href)
               promisesUrl.push(getStatusUrl(link))
             }
           }
         }
         Promise.all(promisesUrl).then(urls => {
-          let uniqueLinks = Array.from(new Set(promisesUrl)).length
-          urls.map(url => {
-            const statusText = url.meta.status >= 400 ? 'fail' : 'ok';
-            resolve(`Total: ${promisesUrl.length} hisjdasdhajshkjahdfkjhadkj
-              Unique: ${uniqueLinks} 
-              Broken: ${statusText}
-              abracadabra: `);
-          })
-        }).catch(console.log)
-      })
+          let linksBroken = [];
+          let uniqueLinks = Array.from(new Set(allLinks)).length
+
+          urls.filter(url => {
+            if (url.meta.status === 404) {
+              linksBroken.push(url.status)
+            };
+          });
+          linksBroken = linksBroken.length;
+          resolve(`Total: ${allLinks.length} 
+Unique: ${uniqueLinks}
+Broken: ${linksBroken}`);
+        });
+
+      }).catch(console.log)
     }
     // Comportamiento por defecto
     if (!validateParam && !statsParam) {

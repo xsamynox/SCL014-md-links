@@ -5,18 +5,14 @@
 * [1. Md-Links](#1-md-links)
 * [2. Flujo](#2-flujo)
 * [3. Comenzando a usarla](#3-comenzando-a-usarla)
-* [4. Consideraciones generales](#4-consideraciones-generales)
-* [5. Criterios de aceptación mínimos del proyecto](#5-criterios-de-aceptación-mínimos-del-proyecto)
-* [6. Entregables](#6-entregables)
-* [7. Hacker edition](#7-hacker-edition)
-* [8. Pistas, tips y lecturas complementarias](#8-pistas-tips-y-lecturas-complementarias)
-* [9. Checklist](#9-checklist)
+* [4. Herramientas y Librerias Utilizadas](#4-herramientas-y-librerias-utilizadas)
+* [5. Autor](#5-autor)
 
 ***
 
 ## 1. Md-Links
 
-![md-links](https://user-images.githubusercontent.com/110297/42118443-b7a5f1f0-7bc8-11e8-96ad-9cc5593715a6.jpg)
+![md-links](Images-readme/portada.png)
 
 
 **¿Qué es Md-Links?**
@@ -28,13 +24,11 @@ Puedes conocerla y probarla [aquí](https://comida-paratodos.web.app/).
 
 Para la implementación de Md-Links se creo un flujo que explica el funcionamiento de la libreria.
 
-![Flujo](src/Images-readme/flujo.png)
+![Flujo](Images-readme/flujo.png)
 ## 3. Comenzando a usarla 🚀
 
 
-
-
-## 7. Herramientas y Librerias Utilizadas 🛠️
+## 4. Herramientas y Librerias Utilizadas 🛠️
 
 En éste proyecto fueron utilizadas varias herramientas y librerias para llegar al resultado del producto entregado.
 Las herramientas usadas fueron:
@@ -47,6 +41,6 @@ Las herramientas usadas fueron:
 * [JSDOM](https://github.com/jsdom/jsdom) – Para crear un dom que se encargue de buscar las etiquetas '<a>'.
 * [Fetch](https://www.npmjs.com/package/fetch) – Para extraer el contenido de los links/urls.
 
-## 8. Autor ✒️
+## 5. Autor ✒️
 
 * **Samantha Moreno** [GitHub](https://github.com/xsamynox) :octocat: - Front-end Developer
